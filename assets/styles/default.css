@@ -1,0 +1,46 @@
+body{
+    background-color: #474553;
+    font-size: 2rem;
+}
+
+.logo{
+    text-align: center;
+    width: 30%;
+}
+
+.content{
+    padding-top: 7vh;
+    text-align: center;
+    width: 40%; 
+    height: 90vh;
+    margin: auto;
+}
+
+.pt-5{
+    padding-top: 7rem;
+}
+
+.pt-3{
+    padding-top: 3rem;
+}   
+
+input{
+    width: 100%;
+    font-size: 3rem;
+    text-align: center;
+}
+
+.button-primary{
+    background-color: 	#a3a2a9;
+    font-size: 3rem;
+    margin-left: 3rem;
+}
+
+.rounded{
+    border-radius: 10px;
+}
+
+.buttons{
+    display: flex;
+    justify-content: center;
+}
