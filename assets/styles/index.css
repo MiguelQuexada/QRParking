@@ -111,9 +111,17 @@ button{
     cursor: pointer;
 }
 
+.warnings{
+    width: 200px;
+    text-align: center;
+    margin: auto;
+    color: #203A43;
+    padding-top: 20px;
+}
+
 @media screen and (max-width:500px){
     .form{
         width: 80%;
-        
+
     }
 }
