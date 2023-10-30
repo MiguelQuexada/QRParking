@@ -1,0 +1,46 @@
+:root{
+    --colorTextos: #49454567;
+}
+
+body{
+    font-family: 'Roboto';
+    background: #0F2027; 
+     /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #2C5364, #203A43, #0F2027); 
+     /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #2C5364, #203A43, #0F2027);
+     /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    height: 650px;
+    display: flex;    
+    justify-content: center;
+    align-items: center;
+}
+
+.grupo{
+    position: relative;
+    margin: 45px;
+}
+
+button{
+    font-family: 'roboto';
+    background: #0F2027; 
+    /* fallback for old browsers */
+   background: -webkit-linear-gradient(to right, #2C5364, #203A43, #0F2027); 
+    /* Chrome 10-25, Safari 5.1-6 */
+   background: linear-gradient(to right, #2C5364, #203A43, #0F2027);
+    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    display: block;
+    width: 80%;
+    margin: 10px auto;
+    color: #fff;
+    height: 40px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.centro{
+    background: #fff;
+    padding: 40px 0;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+}
