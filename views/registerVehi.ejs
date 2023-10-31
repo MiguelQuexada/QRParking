@@ -10,30 +10,25 @@
 </head>
     <body>
         <% if(login){ %>
-        <form action="register" method="post">
+        <form action="registerVehi" method="post">
             <div class="form">
-                <h1>REGISTRO<br>USUARIO</h1>
+                <h1>REGISTRO<br>VEHICULO</h1>
                 <div class="grupo">
-                    <input type="text" name="nombre" id="nombre" required><span class="barra"></span>
-                    <label for="">Nombre Completo</label>
+                    <input type="text" name="placa" id="placa" required><span class="barra"></span>
+                    <label for="">Placa</label>
                 </div>
                 <div class="grupo">
-                    <input type="password" name="contra" id="contra" required><span class="barra"></span>
-                    <label for="">Contraseña</label>
+                    <input type="text" name="tipoVehiculo" id="tipoVehiculo" required><span class="barra"></span>
+                    <label for="">Tipo de Vehiculo</label>
                 </div>  
                 <div class="grupo">
-                    <input type="text" name="cedula" id="cedula" required><span class="barra"></span>
-                    <label for="">Cedula</label>
+                    <input type="text" name="bahia" id="bahia" required><span class="barra"></span>
+                    <label for="">Bahia</label>
                 </div>                     
                 <div class="grupo">
-                    <input type="text" name="tipoUsuario" id="tipoUsuario" required><span class="barra"></span>
-                    <label for="">Tipo de usuario</label>
-                </div>     
-                <div class="grupo">
-                    <input type="text" name="apto" id="apto"><span class="barra"></span>
-                    <label for="">Número apartamento</label>
-                </div>                   
-                    
+                    <input type="text" name="idUsuario" id="idUsuario" required><span class="barra"></span>
+                    <label for="">ID del usuario</label>
+                </div>                      
                 <button type="submit">Registrar</button>     
                 <a href="homeAdmin"><button type="button">Volver</button></a>                           
             </div>                   
@@ -52,6 +47,8 @@
                 })
             </script>
             <% } %>        
+
+
 
         <%} else {%>
             <div class="centro">

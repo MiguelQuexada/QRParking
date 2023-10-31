@@ -34,8 +34,7 @@ app.get ('/', (req, res)=>{
     res.render('login');
 })
 
-
-//Registro
+//Registro Usuarios
 app.post('/register', async (req, res)=>{
     const nombre = req.body.nombre;
     const contra = req.body.contra;
@@ -48,6 +47,7 @@ app.post('/register', async (req, res)=>{
             console.log(error);           
         }else{
             res.render('register',{
+                login: true,
                 alert: true,
                 alertTitle: "Registro",
                 alertMessage: "¡Registro exitoso!",
@@ -55,6 +55,30 @@ app.post('/register', async (req, res)=>{
                 showConfirmButton: false,
                 timer: 1500,
                 ruta: 'home'
+            })
+        }   
+    })   
+})
+
+//Registro Vehiculos
+app.post('/registerVehi', async (req, res)=>{
+    const placa = req.body.placa;
+    const tipoVehiculo = req.body.tipoVehiculo;
+    const bahia = req.body.bahia;    
+    const idUsuario = req.body.idUsuario;     
+    connection.query('INSERT INTO VEHICULOS SET ?',{ placa:placa, tipoVehiculo:tipoVehiculo, bahia:bahia, id_usuario:idUsuario}, async(error, results)=>{
+        if(error){
+            console.log(error);           
+        }else{
+            res.render('registerVehi',{
+                login: true,
+                alert: true,
+                alertTitle: "Registro",
+                alertMessage: "¡Registro exitoso!",
+                alertIcon: 'success',
+                showConfirmButton: false,
+                timer: 1500,
+                ruta: 'homeAdmin'
             })
         }   
     })   
@@ -87,27 +111,79 @@ app.post('/auth', async (req, res)=>{
                     alertIcon: "success",
                     showConfirmButton: false,
                     timer: 1500,
-                    ruta:'home'
+                    
+                    ruta:'homeAdmin',
+                    login: true,
+                    nombre: req.session.nombre                   
                 });
             }
         })
     }
 })
 
+//Verificación id/vehiculo
+app.post('/verifyId', async (req, res)=>{
+    const identification = req.body.identification;
+    if (identification){
+        connection.query('SELECT * FROM vehiculos WHERE id_usuario=?', [identification], async (error, results)=>{
+            if(results.length == 0 || !(identification == results[0].id_usuario)){
+                res.render('homeVig',{
+                    alert:true,
+                    alertTitle: "Acceso Denegado",
+                    alertMessage: "El usuario no se encuentra en la base de datos o no tiene un vehiculo registrado",
+                    alertIcon: "error",
+                    showConfirmButton: true,
+                    timer: false,
+                    login: true,                    
+                    ruta: 'homeVig',
+                    nombre: req.session.nombre                                                      
+                });
+            }else{
+                res.render('homeVig', {
+                alert:true,
+                alertTitle: "Acceso Permitido",
+                alertMessage: "USUARIO: " + results[0].id_usuario +" PLACA: " + results[0].placa + " TIPO: " + results[0].tipoVehiculo + " BAHIA: "+ results[0].bahia,
+                alertIcon: "success",
+                showConfirmButton: true,
+                timer: false,
+                ruta:'homeVig',
+                login: true,
+                nombre: req.session.nombre      
+                });
+            }           
+        })
+    }
+})
+
 //Autentificación en las páginas
-app.get('/home', (req, res)=>{
+app.get('/homeAdmin', (req, res)=>{
     if(req.session.loggedin){
-        res.render('home',{
+        res.render('homeAdmin',{
             login: true,
             nombre: req.session.nombre
         });
     }else{{
-        res.render('home',{
+        res.render('homeAdmin',{
             login: false,
             nombre: 'ACCESO DENEGADO'
         })
     }}
 })
+
+app.get('/homeVig', (req, res)=>{
+    if(req.session.loggedin){
+        res.render('homeVig',{
+            login: true,
+            nombre: req.session.nombre
+        });
+    }else{{
+        res.render('homeVig',{
+            login: false,
+            nombre: 'ACCESO DENEGADO'
+        })
+    }}
+})
+
 
 app.get('/register', (req, res)=>{
     if(req.session.loggedin){
@@ -122,6 +198,21 @@ app.get('/register', (req, res)=>{
         })
     }}
 })
+
+app.get('/registerVehi', (req, res)=>{
+    if(req.session.loggedin){
+        res.render('registerVehi',{
+            login: true,
+            nombre: req.session.nombre
+        });
+    }else{{
+        res.render('registerVehi',{
+            login: false,
+            nombre: 'ACCESO DENEGADO'
+        })
+    }}
+})
+
 
 //Logout
 app.get('/logout', (req, res)=>{
