@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Vigilantes</title>
+        <title>Residentes</title>
     <link rel="icon" href="resources/images/logo.png">
     <link rel="stylesheet" href="resources/styles/home.css">    
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" >   
@@ -11,19 +11,11 @@
     <body>
         <div class="centro">
             <% if(login){ %>
-                <h1>BIENVENID@: <br><strong><%=nombre%></strong></h1>
-                <form action="/verifyId" method="post" id="form">
-                    <div class="form">
-                        <div class="grupo">
-                            <input type="text" name="identification" id="identification" required><span class="barra"></span>
-                            <label for="">Identificación del residente:</label>
-                        </div>           
-                        <button type="submit">Verificar</button>                                                         
-                    </div>                   
-                </form>    
-
-                <a href="logout"><button>Desconectarse</button></a> 
-
+                <h1>BIENVENID@: <strong><%=nombre%></strong></h1>
+                <a href="consult"><button>Consultar Información</button></a>
+                <a href="report"><button>Generar Reporte</button></a>                                                                                                         
+                <a href="logout"><button>Desconectarse</button></a>        
+                         
                 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
                 <% if (typeof alert != "undefined"){%>
@@ -38,8 +30,8 @@
                            window.location='/<%=ruta%>'
                        })
                    </script>
-                   <% } %>            
-                         
+                   <% } %>      
+
             <%} else { %>
                 <div class="grupo">
                     <h1><strong><%=nombre%></strong></h1>

@@ -29,7 +29,7 @@ app.use(session({
 //Modulo de conexión con la BD
 const connection = require('./database/db');
 
-//Creación de rutas
+//Creación de ruta 
 app.get ('/', (req, res)=>{
     res.render('login');
 })
@@ -44,7 +44,16 @@ app.post('/register', async (req, res)=>{
     let passwordHaash = await bcryptjs.hash(contra,8);
     connection.query('INSERT INTO USUARIOS SET ?',{ id:cedula, nombre:nombre, contra:passwordHaash, tipo:tipoUsuario, numeroApto:apto}, async(error, results)=>{
         if(error){
-            console.log(error);           
+            res.render('register',{
+                login: true,
+                alert: true,
+                alertTitle: "ERROR",
+                alertMessage: "Los datos ingresados son invalidos",
+                alertIcon: 'error',
+                showConfirmButton: false,
+                timer: false,
+                ruta: 'register'
+            })          
         }else{
             res.render('register',{
                 login: true,
@@ -54,7 +63,7 @@ app.post('/register', async (req, res)=>{
                 alertIcon: 'success',
                 showConfirmButton: false,
                 timer: 1500,
-                ruta: 'home'
+                ruta: 'homeAdmin'
             })
         }   
     })   
@@ -68,7 +77,16 @@ app.post('/registerVehi', async (req, res)=>{
     const idUsuario = req.body.idUsuario;     
     connection.query('INSERT INTO VEHICULOS SET ?',{ placa:placa, tipoVehiculo:tipoVehiculo, bahia:bahia, id_usuario:idUsuario}, async(error, results)=>{
         if(error){
-            console.log(error);           
+            res.render('registerVehi',{
+                login: true,
+                alert: true,
+                alertTitle: "ERROR",
+                alertMessage: "Los datos ingresados son invalidos",
+                alertIcon: 'error',
+                showConfirmButton: false,
+                timer: false,
+                ruta: 'registerVehi'
+            })       
         }else{
             res.render('registerVehi',{
                 login: true,
@@ -88,6 +106,7 @@ app.post('/registerVehi', async (req, res)=>{
 app.post('/auth', async (req, res)=>{
     const usuario = req.body.usuario;
     const contras = req.body.contras;
+    const rutaUsua = "";   
     let passwordHaash = await bcryptjs.hash(contras, 8);
     if (usuario && contras){
         connection.query('SELECT * FROM usuarios WHERE id=?', [usuario], async (error, results)=>{
@@ -104,6 +123,18 @@ app.post('/auth', async (req, res)=>{
             }else{
                 req.session.loggedin = true;
                 req.session.nombre = results[0].nombre
+                tipoUsuario = results[0].tipo
+                switch(tipoUsuario){
+                    case "admin":
+                        this.rutaUsua="homeAdmin";
+                    break;
+                    case "vigilante":
+                        this.rutaUsua="homeVig";
+                    break;
+                    case "residente":
+                        this.rutaUsua="homeResidente";
+                    break;
+                }         
                 res.render('login',{
                     alert:true,
                     alertTitle: "Conexión Exitosa",
@@ -111,8 +142,7 @@ app.post('/auth', async (req, res)=>{
                     alertIcon: "success",
                     showConfirmButton: false,
                     timer: 1500,
-                    
-                    ruta:'homeAdmin',
+                    ruta: this.rutaUsua,
                     login: true,
                     nombre: req.session.nombre                   
                 });
@@ -155,7 +185,46 @@ app.post('/verifyId', async (req, res)=>{
     }
 })
 
-//Autentificación en las páginas
+//Consulta de datos residente
+app.get('/consult', async (req, res)=>{
+    const nombre = req.session.nombre;
+        connection.query('SELECT * FROM usuarios WHERE nombre=?', [nombre], async (error, results)=>{
+                id=results[0].id
+                connection.query('SELECT * FROM vehiculos WHERE id_usuario=?', [id], async (error, results)=>{    
+                    if(results.length==0){
+                        connection.query('SELECT * FROM usuarios WHERE id=?', [id], async (error, results)=>{
+                            res.render('homeResidente',{
+                                alert:true,
+                                alertTitle: "SUS DATOS SON",
+                                alertMessage: "USUARIO: " + results[0].id + "NOMBRE: " + results[0].nombre + " APARTAMENTO: " + results[0].numeroApto + " NO CUENTA CON UN VEHICULO ASOCIADO",
+                                alertIcon: "info",
+                                showConfirmButton: true,
+                                timer: false,
+                                ruta: 'homeResidente',
+                                login: true,
+                                nombre: req.session.nombre                               
+                            }); 
+                        })
+                    }else{
+                        connection.query('SELECT id,nombre,numeroApto,vehiculos.placa,vehiculos.bahia FROM usuarios FULL JOIN vehiculos WHERE id=?', [id], async (error, results)=>{   
+                            res.render('homeResidente', {
+                            alert:true,
+                            alertTitle: "SUS DATOS SON:",
+                            alertMessage: "USUARIO: " + results[0].id + " NOMBRE: " + results[0].nombre + " APARTAMENTO: " + results[0].numeroApto + " PLACA: " + results[0].placa + " BAHIA: " + results[0].bahia,
+                            alertIcon: "info",
+                            showConfirmButton: true,
+                            timer: false,
+                            ruta:'homeResidente',
+                            login: true,
+                            nombre: req.session.nombre      
+                            });
+                        })                      
+                    }          
+            })       
+        })
+})
+
+//Autentificación y creación de las páginas
 app.get('/homeAdmin', (req, res)=>{
     if(req.session.loggedin){
         res.render('homeAdmin',{
@@ -178,6 +247,20 @@ app.get('/homeVig', (req, res)=>{
         });
     }else{{
         res.render('homeVig',{
+            login: false,
+            nombre: 'ACCESO DENEGADO'
+        })
+    }}
+})
+
+app.get('/homeResidente', (req, res)=>{
+    if(req.session.loggedin){
+        res.render('homeResidente',{
+            login: true,
+            nombre: req.session.nombre,
+        });
+    }else{{
+        res.render('homeResidente',{
             login: false,
             nombre: 'ACCESO DENEGADO'
         })
@@ -213,6 +296,19 @@ app.get('/registerVehi', (req, res)=>{
     }}
 })
 
+app.get('/report', (req, res)=>{
+    if(req.session.loggedin){
+        res.render('report',{
+            login: true,
+            nombre: req.session.nombre
+        });
+    }else{{
+        res.render('report',{
+            login: false,
+            nombre: 'ACCESO DENEGADO'
+        })
+    }}
+})
 
 //Logout
 app.get('/logout', (req, res)=>{
