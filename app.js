@@ -2,6 +2,16 @@
 const express = require ('express');
 const app = express();
 
+//Establecer constantes de tiempo
+var diffMs = 0;
+var totalMinutes = 0;
+var days = 0;
+var hours = 0;
+var minutes = 0;
+var price = 0;
+var horaFinal = new Date();
+var horaInicio = new Date();
+
 //Establecer urlencoded para capturar datos del formulario
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());
@@ -152,7 +162,7 @@ app.post('/auth', async (req, res)=>{
 })
 
 //Verificación id/vehiculo
-app.post('/verifyId', async (req, res)=>{
+app.post('/verifyIdVig', async (req, res)=>{
     const identification = req.body.identification;
     if (identification){
         connection.query('SELECT * FROM vehiculos WHERE id_usuario=?', [identification], async (error, results)=>{
@@ -183,6 +193,138 @@ app.post('/verifyId', async (req, res)=>{
             }           
         })
     }
+})
+
+app.post('/verifyId', async (req, res)=>{
+    const identification = req.body.identification;
+    if (identification){
+        connection.query('SELECT * FROM vehiculos WHERE id_usuario=?', [identification], async (error, results)=>{
+            if(results.length == 0 || !(identification == results[0].id_usuario)){
+                connection.query('SELECT * FROM usuarios  WHERE id=?', [identification], async (error, results)=>{ 
+                    if(results.length == 0 || !(identification == results[0].id)){                                 
+                        res.render('verify',{                 
+                            alert:true,
+                            alertTitle: "Usuario no encontrado",
+                            alertMessage: "El usuario no se encuentra en la base de datos",
+                            alertIcon: "error",
+                            showConfirmButton: true,
+                            timer: false,
+                            login: true,                    
+                            ruta: 'verify',
+                            nombre: req.session.nombre     
+                        });
+                    }else{
+                        res.render('verify', {
+                            alert:true,
+                            alertTitle: "Usuario Registrado",
+                            alertMessage: "USUARIO: " + results[0].id +" El usuario no tiene vehiculo asociado",
+                            alertIcon: "success",
+                            showConfirmButton: true,
+                            timer: false,
+                            ruta:'verify',
+                            login: true,
+                            nombre: req.session.nombre      
+                            });                        
+                    };               
+                })
+            }else{
+                res.render('verify', {
+                alert:true,
+                alertTitle: "Usuario Registrado",
+                alertMessage: "USUARIO: " + results[0].id_usuario +" PLACA: " + results[0].placa + " TIPO: " + results[0].tipoVehiculo + " BAHIA: "+ results[0].bahia,
+                alertIcon: "success",
+                showConfirmButton: true,
+                timer: false,
+                ruta:'verify',
+                login: true,
+                nombre: req.session.nombre      
+                });
+            }           
+        })
+    }
+})
+
+//Ingreso/Salida de Visitantes
+app.post('/visitors', async (req, res)=>{
+    const accion = req.body.accion;
+    const idVisit = req.body.idVisit;    
+    const nombre = req.body.nombre;
+    const idResidente = req.body.idResidente; 
+
+    if(accion=="ingresar"){
+        horaInicio = new Date(); 
+        horaInicio = horaInicio.getTime();      
+        connection.query('INSERT INTO visitantes SET ?',{ idVisit:idVisit, nombreVis:nombre, horaIni:horaInicio,id_usuario:idResidente}, async(error, results)=>{
+            if(error){
+                res.render('verifyVisit',{
+                    login: true,
+                    alert: true,
+                    alertTitle: "ERROR",
+                    alertMessage: "Los datos ingresados son invalidos",
+                    alertIcon: 'error',
+                    showConfirmButton: false,
+                    timer: false,
+                    ruta: 'verifyVisit'
+                })          
+            }else{
+                res.render('verifyVisit',{
+                    login: true,
+                    alert: true,
+                    alertTitle: "¡Registro exitoso!",
+                    alertMessage: "Bienvenido",
+                    alertIcon: 'success',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    ruta: 'verifyVisit'
+                })
+            }   
+        }) 
+    }
+    if(accion=="salir"){      
+        connection.query('SELECT * FROM visitantes WHERE idVisit='+ [idVisit], async (error, results)=>{            
+            if(error){
+                res.render('verifyVisit',{
+                    login: true,
+                    alert: true,
+                    alertTitle: "ERROR",
+                    alertMessage: "Los datos ingresados son invalidos",
+                    alertIcon: 'error',
+                    showConfirmButton: false,
+                    timer: false,
+                    ruta: 'verifyVisit'
+                })        
+            }else{
+                connection.query('SELECT * FROM visitantes WHERE idVisit='+ [idVisit], async (error, results)=>{   
+                    horaFinal = new Date();
+                    horaFinal = horaFinal.getTime();
+                    horaInicio = results[0].horaIni;
+                connection.query('UPDATE visitantes SET ? WHERE idVisit='+[idVisit], {horaFin:horaFinal}, async(error, results)=>{ 
+                    diffMs=Math.abs(horaFinal-horaInicio);
+                    totalMinutes = Math.floor(diffMs / (1000 * 60));
+                    days = Math.floor(totalMinutes / (24 *  60));
+                    hours = Math.floor((totalMinutes - (days * 24 * 60)) / 60);
+                    minutes = totalMinutes - (days * 24 * 60) - (hours * 60);  
+                    price = totalMinutes * 5;  
+                    console.log('horaFinal ' + horaFinal);
+                    console.log('horaInicio ' + horaInicio);                    
+                    console.log('diffMs ' + diffMs);
+                    res.render('verifyVisit',{
+                        login: true,
+                        alert: true,
+                        alertTitle: "¡Validación Exitosa!",
+                        alertMessage: "El monto a pagar es: $"+ price,
+                        alertIcon: 'success',
+                        showConfirmButton: true,
+                        timer: false,
+                        ruta: 'verifyVisit'
+                    })
+                })
+                })
+            }  
+        })
+    }
+    
+    
 })
 
 //Consulta de datos residente
@@ -304,6 +446,34 @@ app.get('/report', (req, res)=>{
         });
     }else{{
         res.render('report',{
+            login: false,
+            nombre: 'ACCESO DENEGADO'
+        })
+    }}
+})
+
+app.get('/verify', (req, res)=>{
+    if(req.session.loggedin){
+        res.render('verify',{
+            login: true,
+            nombre: req.session.nombre
+        });
+    }else{{
+        res.render('verify',{
+            login: false,
+            nombre: 'ACCESO DENEGADO'
+        })
+    }}
+})
+
+app.get('/verifyVisit', (req, res)=>{
+    if(req.session.loggedin){
+        res.render('verifyVisit',{
+            login: true,
+            nombre: req.session.nombre
+        });
+    }else{{
+        res.render('verifyVisit',{
             login: false,
             nombre: 'ACCESO DENEGADO'
         })

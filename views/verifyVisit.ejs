@@ -11,18 +11,32 @@
     <body>
         <div class="centro">
             <% if(login){ %>
-                <h1>GESTIÓN DE INGRESOS Y SALIDAS<br>BIENVENID@: <br><strong><%=nombre%></strong></h1>
-                <form action="/verifyIdVig" method="post" id="form">
-                    <div class="form">
+                <h1>GESTIÓN DE VISITANTES</h1>
+                <form action="/visitors" method="post" id="form">
+                    <div class="form">            
                         <div class="grupo">
-                            <input type="text" name="identification" id="identification" required><span class="barra"></span>
-                            <label for="">Identificación del residente:</label>
-                        </div>           
+                            <p>Acción</p>     
+                            <select class="selector" id="accion" name="accion">
+                              <option value="ingresar">Ingresar</option>
+                              <option value="salir">Salir</option>
+                            </select>
+                        </div>
+                        <div class="grupo">
+                            <input type="text" name="idVisit" id="idVisit" required><span class="barra"></span>
+                            <label for="">Identificación del Visitante:</label>
+                        </div>   
+                        <div class="grupo">
+                            <input type="text" name="nombre" id="nombre" required><span class="barra"></span>
+                            <label for="">Nombre del Visitante</label>
+                        </div>
+                        <div class="grupo">
+                            <input type="text" name="idResidente" id="idResidente" required><span class="barra"></span>
+                            <label for="">Identificación del Residente a Visitar</label>
+                        </div>                                                         
                         <button type="submit">Verificar</button>                                                         
                     </div>                   
-                </form>    
-                <a href="verifyVisit"><button>Gestión de Visitantes</button></a>    
-                <a href="logout"><button>Desconectarse</button></a> 
+                </form>       
+                <a href="homeVig"><button type="button">Volver</button></a>                           
 
                 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
