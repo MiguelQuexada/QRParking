@@ -305,9 +305,6 @@ app.post('/visitors', async (req, res)=>{
                     hours = Math.floor((totalMinutes - (days * 24 * 60)) / 60);
                     minutes = totalMinutes - (days * 24 * 60) - (hours * 60);  
                     price = totalMinutes * 5;  
-                    console.log('horaFinal ' + horaFinal);
-                    console.log('horaInicio ' + horaInicio);                    
-                    console.log('diffMs ' + diffMs);
                     res.render('verifyVisit',{
                         login: true,
                         alert: true,
