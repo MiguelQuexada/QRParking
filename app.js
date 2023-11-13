@@ -161,7 +161,7 @@ app.post('/auth', async (req, res)=>{
     }
 })
 
-//Verificación id/vehiculo
+//Verificación id/vehiculo 
 app.post('/verifyIdVig', async (req, res)=>{
     const identification = req.body.identification;
     if (identification){
@@ -324,6 +324,60 @@ app.post('/visitors', async (req, res)=>{
     
 })
 
+app.post('/report', async(req,res)=>{
+    const nombre = req.session.nombre;
+    const descrip = req.body.descrip;
+    var qs = require("querystring");
+    var http = require("https");
+  
+    connection.query('SELECT * FROM usuarios WHERE nombre=?', [nombre], async (error, results)=>{   
+        const bahiaReport = results[0].bahia;
+    var options = {
+      "method": "POST",
+      "hostname": "api.ultramsg.com",
+      "port": null,
+      "path": "/instance68319/messages/chat",
+      "headers": {
+        "content-type": "application/x-www-form-urlencoded"
+      }
+    };
+    
+    var req = http.request(options, function (res) {
+      var chunks = [];
+    
+      res.on("data", function (chunk) {
+        chunks.push(chunk);
+      });
+    
+      res.on("end", function () {
+        var body = Buffer.concat(chunks);
+        console.log(body.toString());
+      });
+    });
+
+
+    var postData = qs.stringify({
+        "token": "u9l24us7wc7ascvz",
+        "to": "+573165514014",
+        "body": "El usuario " + nombre + " presenta un inconveniente \n Bahia " + bahiaReport + " \n Mensaje:  " + descrip 
+    });
+
+    req.write(postData);
+    req.end();    
+    })
+    res.render('report', {
+        alert:true,
+        alertTitle: "Reporte enviado",
+        alertMessage: "Su reporte ha sido enviado correctamente",
+        alertIcon: "info",
+        showConfirmButton: true,
+        timer: false,
+        ruta:'report',
+        login: true,
+        nombre: req.session.nombre      
+        });   
+})
+
 //Consulta de datos residente
 app.get('/consult', async (req, res)=>{
     const nombre = req.session.nombre;
@@ -483,6 +537,7 @@ app.get('/logout', (req, res)=>{
         res.redirect('/')
     })
 })
+
 
 //Ejecutar aplicación en localhost
 app.listen(3000, (req, res)=>{
