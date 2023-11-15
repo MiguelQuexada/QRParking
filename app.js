@@ -11,6 +11,7 @@ var minutes = 0;
 var price = 0;
 var horaFinal = new Date();
 var horaInicio = new Date();
+let pagoPend = 0;
 
 //Establecer urlencoded para capturar datos del formulario
 app.use(express.urlencoded({extended:false}));
@@ -116,7 +117,8 @@ app.post('/registerVehi', async (req, res)=>{
 app.post('/auth', async (req, res)=>{
     const usuario = req.body.usuario;
     const contras = req.body.contras;
-    const rutaUsua = "";   
+    var tipoUsuario;
+    var rutaUsua = "";  
     let passwordHaash = await bcryptjs.hash(contras, 8);
     if (usuario && contras){
         connection.query('SELECT * FROM usuarios WHERE id=?', [usuario], async (error, results)=>{
@@ -142,20 +144,42 @@ app.post('/auth', async (req, res)=>{
                         this.rutaUsua="homeVig";
                     break;
                     case "residente":
-                        this.rutaUsua="homeResidente";
+                        connection.query('SELECT * FROM pago WHERE id_usuario=?', [usuario], async (error, results)=>{  
+                            if(results[0].pagoPendiente>0 ){
+                                this.pagoPend = parseInt(results[0].pagoPendiente); 
+                                this.rutaUsua=" ";                                     
+                            }                                                       
+                            else{
+                                this.rutaUsua="homeResidente";                        
+                            }
+                        })
                     break;
-                }         
-                res.render('login',{
-                    alert:true,
-                    alertTitle: "Conexión Exitosa",
-                    alertMessage: "Bienvenid@",
-                    alertIcon: "success",
-                    showConfirmButton: false,
-                    timer: 1500,
-                    ruta: this.rutaUsua,
-                    login: true,
-                    nombre: req.session.nombre                   
-                });
+                }
+                if(this.pagoPend>0 ){
+                    res.render('login',{
+                        alert:true,
+                        alertTitle: "Acceso denegado",
+                        alertMessage: "El usuario tiene pagos pendientes",
+                        alertIcon: "error",
+                        showConfirmButton: true,
+                        timer: false,
+                        ruta: this.rutaUsua                                
+                    });                 
+                }
+                else{
+                    res.render('login',{
+                        alert:true,
+                        alertTitle: "Conexión Exitosa",
+                        alertMessage: "Bienvenid@",
+                        alertIcon: "success",
+                        showConfirmButton: false,
+                        timer: 1500,
+                        ruta: this.rutaUsua,
+                        login: true,
+                        nombre: req.session.nombre           
+                    });                       
+                }               
+
             }
         })
     }
@@ -304,7 +328,7 @@ app.post('/visitors', async (req, res)=>{
                     days = Math.floor(totalMinutes / (24 *  60));
                     hours = Math.floor((totalMinutes - (days * 24 * 60)) / 60);
                     minutes = totalMinutes - (days * 24 * 60) - (hours * 60);  
-                    price = totalMinutes * 5;  
+                    price = (minutes * 10) + (hours * 300);  
                     res.render('verifyVisit',{
                         login: true,
                         alert: true,
@@ -324,13 +348,14 @@ app.post('/visitors', async (req, res)=>{
     
 })
 
+//Envio de reportes
 app.post('/report', async(req,res)=>{
     const nombre = req.session.nombre;
     const descrip = req.body.descrip;
     var qs = require("querystring");
     var http = require("https");
   
-    connection.query('SELECT * FROM usuarios WHERE nombre=?', [nombre], async (error, results)=>{   
+    connection.query('SELECT usuarios.nombre, usuarios.id, vehiculos.bahia FROM usuarios LEFT JOIN vehiculos ON vehiculos.id_usuario = usuarios.id  WHERE usuarios.nombre=?', [nombre], async (error, results)=>{   
         const bahiaReport = results[0].bahia;
     var options = {
       "method": "POST",
@@ -359,7 +384,7 @@ app.post('/report', async(req,res)=>{
     var postData = qs.stringify({
         "token": "u9l24us7wc7ascvz",
         "to": "+573165514014",
-        "body": "El usuario " + nombre + " presenta un inconveniente \n Bahia " + bahiaReport + " \n Mensaje:  " + descrip 
+        "body": "R E P O R T E  H O R U S \n El usuario " + nombre + " presenta un inconveniente \nBahia del usuario: " + bahiaReport + " \n Mensaje:  " + descrip 
     });
 
     req.write(postData);
