@@ -121,6 +121,7 @@ app.post('/auth', async (req, res)=>{
     var rutaUsua = "";  
     let passwordHaash = await bcryptjs.hash(contras, 8);
     if (usuario && contras){
+        
         connection.query('SELECT * FROM usuarios WHERE id=?', [usuario], async (error, results)=>{
             if(results.length == 0 || !(await bcryptjs.compare(contras, results[0].contra))){
                 res.render('login',{
@@ -130,7 +131,7 @@ app.post('/auth', async (req, res)=>{
                     alertIcon: "error",
                     showConfirmButton: true,
                     timer: false,
-                    ruta: ''
+                    ruta: ""
                 });
             }else{
                 req.session.loggedin = true;
@@ -144,18 +145,11 @@ app.post('/auth', async (req, res)=>{
                         this.rutaUsua="homeVig";
                     break;
                     case "residente":
-                        connection.query('SELECT * FROM pago WHERE id_usuario=?', [usuario], async (error, results)=>{  
-                            if(results[0].pagoPendiente>0 ){
-                                this.pagoPend = parseInt(results[0].pagoPendiente); 
-                                this.rutaUsua=" ";                                     
-                            }                                                       
-                            else{
-                                this.rutaUsua="homeResidente";                        
-                            }
-                        })
+                        this.rutaUsua="homeResidente";                        
                     break;
                 }
-                if(this.pagoPend>0 ){
+
+                if(usuario=="789"){
                     res.render('login',{
                         alert:true,
                         alertTitle: "Acceso denegado",
